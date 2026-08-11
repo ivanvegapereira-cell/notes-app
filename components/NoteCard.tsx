@@ -45,7 +45,7 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-200 hover:border-blue-300 group">
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 group">
       {/* Header con gradiente */}
       <div className={`h-1 bg-gradient-to-r ${categoryColors[note.category]}`}></div>
 
@@ -69,14 +69,14 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
             )}
             <div className="flex-1">
               <h3
-                className={`font-semibold text-gray-800 text-lg ${
-                  note.completed ? 'line-through text-gray-500' : ''
+                className={`font-semibold text-gray-800 dark:text-white text-lg ${
+                  note.completed ? 'line-through text-gray-500 dark:text-gray-400' : ''
                 }`}
               >
                 {note.title}
               </h3>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span className="text-xs font-medium bg-slate-100 text-slate-700 px-2 py-1 rounded">
+                <span className="text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-2 py-1 rounded">
                   {categoryLabels[note.category]}
                 </span>
                 {note.priority && note.category !== 'note' && (
@@ -111,13 +111,13 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
         </div>
 
         {/* Contenido */}
-        <p className={`text-sm text-gray-700 mb-3 line-clamp-2 ${note.completed ? 'text-gray-500' : ''}`}>
+        <p className={`text-sm text-gray-700 dark:text-gray-300 mb-3 line-clamp-2 ${note.completed ? 'text-gray-500 dark:text-gray-400' : ''}`}>
           {note.content.substring(0, 150)}
           {note.content.length > 150 ? '...' : ''}
         </p>
 
         {/* Metadata */}
-        <div className="space-y-2 text-xs text-gray-600 pt-3 border-t border-slate-100">
+        <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400 pt-3 border-t border-slate-100 dark:border-slate-700">
           {note.dueDate && (
             <div className="flex items-center gap-2">
               <span>📅</span>

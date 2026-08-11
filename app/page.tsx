@@ -9,6 +9,8 @@ import NoteCard from '@/components/NoteCard';
 import NoteModal from '@/components/NoteModal';
 import SearchBar from '@/components/SearchBar';
 import Calendar from '@/components/Calendar';
+import DashboardStats from '@/components/DashboardStats';
+import FilterBar, { FilterState, SortOption } from '@/components/FilterBar';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,6 +19,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [filters, setFilters] = useState<FilterState>({ priority: 'all', status: 'all' });
+  const [sort, setSort] = useState<SortOption>('newest');
 
   const { notes, addNote, updateNote, getNotesByCategory, syncWithCloud, setNotes } = useNotesStore();
   const isSyncing = useNotesStore((state) => state.isSyncing);
@@ -73,7 +77,37 @@ export default function Home() {
       );
     }
 
-    return filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    // Aplicar filtros
+    if (filters.priority !== 'all') {
+      filtered = filtered.filter((note) => note.priority === filters.priority);
+    }
+
+    if (filters.status === 'completed') {
+      filtered = filtered.filter((note) => note.completed);
+    } else if (filters.status === 'pending') {
+      filtered = filtered.filter((note) => !note.completed);
+    }
+
+    // Aplicar ordenamiento
+    return filtered.sort((a, b) => {
+      switch (sort) {
+        case 'oldest':
+          return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+        case 'dueDate':
+          if (!a.dueDate && !b.dueDate) return 0;
+          if (!a.dueDate) return 1;
+          if (!b.dueDate) return -1;
+          return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+        case 'priority':
+          const priorityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+          const aPriority = a.priority as string;
+          const bPriority = b.priority as string;
+          return (priorityOrder[aPriority] || 3) - (priorityOrder[bPriority] || 3);
+        case 'newest':
+        default:
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      }
+    });
   };
 
   const getTodayTasks = () => {
@@ -109,22 +143,27 @@ export default function Home() {
   const todayTasks = getTodayTasks();
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
+    <div className="flex h-screen bg-white dark:bg-slate-900 overflow-hidden">
       <Sidebar
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
         onNewNote={handleNewNote}
       />
 
-      <main className="flex-1 overflow-auto md:ml-0 pt-16 md:pt-0 md:ml-72">
+      <main className="flex-1 overflow-auto md:ml-0 pt-16 md:pt-0 md:ml-72 bg-white dark:bg-slate-900">
         {/* Dashboard - Calendario */}
         {activeCategory === 'dashboard' && (
           <div className="p-4 sm:p-6 md:p-8 pb-20 md:pb-0">
-            <div className="mb-4 sm:mb-8">
+            <div className="mb-6 sm:mb-8">
               <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-1 sm:mb-2">
                 Dashboard
               </h1>
-              <p className="text-xs sm:text-base text-slate-600">Gestiona tu día de manera efectiva</p>
+              <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400">Gestiona tu día de manera efectiva</p>
+            </div>
+
+            {/* Stats */}
+            <div className="mb-8">
+              <DashboardStats notes={notes} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
@@ -135,9 +174,9 @@ export default function Home() {
 
               {/* Tareas de hoy */}
               <div className="order-1 lg:order-2">
-                <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 sticky top-4 sm:top-8">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-3 sm:mb-4">Hoy</h2>
-                  <div className="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4">
+                <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 sm:p-6 sticky top-4 sm:top-8">
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-4">Hoy</h2>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
                     {new Date().toLocaleDateString('es-ES', {
                       weekday: 'short',
                       month: 'short',
@@ -146,7 +185,7 @@ export default function Home() {
                   </div>
 
                   {todayTasks.length === 0 ? (
-                    <p className="text-slate-500 text-xs sm:text-sm">No hay tareas para hoy</p>
+                    <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">No hay tareas para hoy</p>
                   ) : (
                     <div className="space-y-2 max-h-48 sm:max-h-96 overflow-y-auto">
                       {todayTasks.map((task) => (
@@ -154,15 +193,15 @@ export default function Home() {
                           key={task.id}
                           className={`p-2 sm:p-3 rounded-lg cursor-pointer transition text-xs sm:text-sm ${
                             task.completed
-                              ? 'bg-green-50 border-l-4 border-green-500'
+                              ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500'
                               : task.priority === 'high'
-                              ? 'bg-red-50 border-l-4 border-red-500'
-                              : 'bg-blue-50 border-l-4 border-blue-500'
+                              ? 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500'
+                              : 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
                           }`}
                           onClick={() => handleEditNote(task)}
                         >
-                          <p className="font-medium text-gray-800 line-clamp-1">{task.title}</p>
-                          <p className="text-xs text-gray-600 mt-1 line-clamp-1">{task.content.substring(0, 50)}</p>
+                          <p className="font-medium text-gray-800 dark:text-white line-clamp-1">{task.title}</p>
+                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">{task.content.substring(0, 50)}</p>
                         </div>
                       ))}
                     </div>
@@ -170,7 +209,7 @@ export default function Home() {
 
                   <button
                     onClick={handleNewNote}
-                    className="w-full mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs sm:text-sm font-medium transition"
+                    className="w-full mt-3 sm:mt-4 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs sm:text-sm font-medium transition"
                   >
                     + Agregar tarea
                   </button>
@@ -184,7 +223,7 @@ export default function Home() {
         {activeCategory !== 'dashboard' && (
           <div className="p-4 sm:p-6 md:p-8 pb-20 md:pb-0">
             <div className="mb-4 sm:mb-8">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 sm:mb-2">
                 {activeCategory === 'all'
                   ? 'Todas mis notas'
                   : activeCategory === 'note'
@@ -193,7 +232,7 @@ export default function Home() {
                   ? 'Tareas'
                   : 'Agenda'}
               </h1>
-              <p className="text-xs sm:text-base text-gray-600">
+              <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400">
                 {displayNotes.length} elemento{displayNotes.length !== 1 ? 's' : ''}
               </p>
             </div>
@@ -202,12 +241,18 @@ export default function Home() {
               <SearchBar onSearch={setSearchQuery} />
             </div>
 
+            {/* Filtros */}
+            <FilterBar
+              onFilterChange={setFilters}
+              onSortChange={setSort}
+            />
+
             {displayNotes.length === 0 ? (
               <div className="mt-12 sm:mt-16 text-center">
-                <p className="text-gray-500 text-base sm:text-lg mb-4">No hay elementos aquí</p>
+                <p className="text-gray-500 dark:text-gray-400 text-base sm:text-lg mb-4">No hay elementos aquí</p>
                 <button
                   onClick={handleNewNote}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
                 >
                   Crear primero
                 </button>

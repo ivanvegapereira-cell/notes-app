@@ -62,9 +62,9 @@ export default function NoteModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b flex justify-between items-center p-6">
-          <h2 className="text-xl font-bold">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             {note ? 'Editar' : 'Nueva'} {formData.category === 'note' ? 'Nota' : formData.category === 'task' ? 'Tarea' : 'Agenda'}
           </h2>
           <button onClick={onClose} className="hover:bg-gray-100 p-1 rounded">
@@ -74,7 +74,7 @@ export default function NoteModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Título
             </label>
             <input
@@ -83,7 +83,7 @@ export default function NoteModal({
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Título de la nota"
               required
             />
@@ -91,7 +91,7 @@ export default function NoteModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Tipo
               </label>
               <select
@@ -102,7 +102,7 @@ export default function NoteModal({
                     category: e.target.value as Note['category'],
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="note">Nota</option>
                 <option value="task">Tarea</option>
@@ -112,7 +112,7 @@ export default function NoteModal({
 
             {formData.category !== 'note' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Prioridad
                 </label>
                 <select
@@ -123,7 +123,7 @@ export default function NoteModal({
                       priority: e.target.value as Note['priority'],
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="low">Baja</option>
                   <option value="medium">Media</option>
@@ -136,7 +136,7 @@ export default function NoteModal({
           {(formData.category === 'task' || formData.category === 'agenda') && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Fecha de vencimiento
                 </label>
                 <input
@@ -149,7 +149,7 @@ export default function NoteModal({
                   onChange={(e) =>
                     setFormData({ ...formData, dueDate: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -164,7 +164,7 @@ export default function NoteModal({
                       }
                       className="rounded"
                     />
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Completada
                     </span>
                   </label>
@@ -174,7 +174,7 @@ export default function NoteModal({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Contenido
             </label>
             <textarea
@@ -182,7 +182,7 @@ export default function NoteModal({
               onChange={(e) =>
                 setFormData({ ...formData, content: e.target.value })
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px] resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px] resize-none"
               placeholder="Escribe tu nota aquí..."
             />
           </div>
@@ -191,13 +191,13 @@ export default function NoteModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
             >
               {note ? 'Actualizar' : 'Crear'}
             </button>
