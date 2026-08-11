@@ -12,6 +12,7 @@ import Calendar from '@/components/Calendar';
 import DashboardStats from '@/components/DashboardStats';
 import FilterBar, { FilterState, SortOption } from '@/components/FilterBar';
 import TrashBin from '@/components/TrashBin';
+import DayActivities from '@/components/DayActivities';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -301,6 +302,15 @@ export default function Home() {
         }}
         onSave={handleSaveNote}
       />
+
+      {/* Day Activities Modal */}
+      {selectedDate && activeCategory === 'dashboard' && (
+        <DayActivities
+          selectedDate={selectedDate}
+          onClose={() => setSelectedDate(undefined)}
+          onEditNote={handleEditNote}
+        />
+      )}
     </div>
   );
 }
