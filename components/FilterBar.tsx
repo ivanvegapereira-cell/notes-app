@@ -62,7 +62,7 @@ export default function FilterBar({ onFilterChange, onSortChange }: FilterBarPro
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex gap-2 flex-wrap">
           <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+            <label className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">
               Prioridad
             </label>
             <div className="flex gap-2 mt-1">
@@ -83,7 +83,7 @@ export default function FilterBar({ onFilterChange, onSortChange }: FilterBarPro
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+            <label className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase">
               Estado
             </label>
             <div className="flex gap-2 mt-1">
@@ -105,7 +105,7 @@ export default function FilterBar({ onFilterChange, onSortChange }: FilterBarPro
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase flex items-center gap-1 mb-1">
+          <label className="text-xs font-bold text-gray-900 dark:text-gray-100 uppercase flex items-center gap-1 mb-1">
             <SortAsc size={14} />
             Ordenar
           </label>

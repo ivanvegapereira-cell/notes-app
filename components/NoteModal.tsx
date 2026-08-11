@@ -74,7 +74,7 @@ export default function NoteModal({
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
               Título
             </label>
             <input
@@ -91,7 +91,7 @@ export default function NoteModal({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
                 Tipo
               </label>
               <select
@@ -112,7 +112,7 @@ export default function NoteModal({
 
             {formData.category !== 'note' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
                   Prioridad
                 </label>
                 <select
@@ -136,7 +136,7 @@ export default function NoteModal({
           {(formData.category === 'task' || formData.category === 'agenda') && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
                   Fecha de vencimiento
                 </label>
                 <input
@@ -164,7 +164,7 @@ export default function NoteModal({
                       }
                       className="rounded"
                     />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                       Completada
                     </span>
                   </label>
@@ -174,7 +174,7 @@ export default function NoteModal({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
               Contenido
             </label>
             <textarea

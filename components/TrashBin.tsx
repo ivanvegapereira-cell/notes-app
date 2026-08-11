@@ -24,13 +24,13 @@ export default function TrashBin() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-800 dark:text-white line-clamp-1">
+                  <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1">
                     {note.title}
                   </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-1 mt-1">
+                  <p className="text-sm text-gray-800 dark:text-gray-300 line-clamp-1 mt-1 font-medium">
                     {note.content.substring(0, 100)}...
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  <p className="text-xs text-gray-800 dark:text-gray-200 font-semibold mt-2">
                     Eliminado:{' '}
                     {note.deletedAt
                       ? format(new Date(note.deletedAt), 'PPp', { locale: es })

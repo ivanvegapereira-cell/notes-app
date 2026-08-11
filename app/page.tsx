@@ -182,8 +182,8 @@ export default function Home() {
               {/* Tareas de hoy */}
               <div className="order-1 lg:order-2">
                 <div className="bg-white dark:bg-slate-800 rounded-lg shadow-lg p-4 sm:p-6 sticky top-4 sm:top-8">
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-4">Hoy</h2>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
+                  <h2 className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mb-3 sm:mb-4">Hoy</h2>
+                  <div className="text-xs sm:text-sm text-gray-800 dark:text-gray-200 font-semibold mb-3 sm:mb-4">
                     {new Date().toLocaleDateString('es-ES', {
                       weekday: 'short',
                       month: 'short',
@@ -192,7 +192,7 @@ export default function Home() {
                   </div>
 
                   {todayTasks.length === 0 ? (
-                    <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">No hay tareas para hoy</p>
+                    <p className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm font-medium">No hay tareas para hoy</p>
                   ) : (
                     <div className="space-y-2 max-h-48 sm:max-h-96 overflow-y-auto">
                       {todayTasks.map((task) => (
@@ -200,15 +200,15 @@ export default function Home() {
                           key={task.id}
                           className={`p-2 sm:p-3 rounded-lg cursor-pointer transition text-xs sm:text-sm ${
                             task.completed
-                              ? 'bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500'
+                              ? 'bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500'
                               : task.priority === 'high'
-                              ? 'bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500'
-                              : 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                              ? 'bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500'
+                              : 'bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500'
                           }`}
                           onClick={() => handleEditNote(task)}
                         >
-                          <p className="font-medium text-gray-800 dark:text-white line-clamp-1">{task.title}</p>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-1">{task.content.substring(0, 50)}</p>
+                          <p className="font-bold text-gray-900 dark:text-white line-clamp-1">{task.title}</p>
+                          <p className="text-xs text-gray-800 dark:text-gray-300 mt-1 line-clamp-1 font-medium">{task.content.substring(0, 50)}</p>
                         </div>
                       ))}
                     </div>

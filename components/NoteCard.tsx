@@ -138,7 +138,11 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
         </div>
 
         {/* Contenido */}
-        <p className={`text-sm text-gray-700 dark:text-gray-300 mb-3 line-clamp-2 ${note.completed ? 'text-gray-500 dark:text-gray-400' : ''}`}>
+        <p className={`text-sm mb-3 line-clamp-2 ${
+          note.completed
+            ? 'text-gray-600 dark:text-gray-500'
+            : 'text-gray-800 dark:text-gray-100'
+        }`}>
           {note.content.substring(0, 150)}
           {note.content.length > 150 ? '...' : ''}
         </p>
@@ -189,9 +193,9 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
         ) : null}
 
         {/* Metadata */}
-        <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400 pt-3 border-t border-slate-100 dark:border-slate-700">
+        <div className="space-y-2 text-xs pt-3 border-t border-slate-100 dark:border-slate-700">
           {note.dueDate && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200 font-medium">
               <span>📅</span>
               <span>
                 {format(new Date(note.dueDate), 'PPP', {
@@ -201,7 +205,7 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
             </div>
           )}
 
-          <div className="text-gray-500 dark:text-gray-400">
+          <div className="text-gray-700 dark:text-gray-300 font-medium">
             {format(new Date(note.updatedAt), 'PPp', {
               locale: es,
             })}

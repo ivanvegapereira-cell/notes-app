@@ -82,7 +82,7 @@ export default function Calendar({ onDateSelect, selectedDate }: CalendarProps) 
       {/* Días de la semana */}
       <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
         {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, idx) => (
-          <div key={idx} className="text-center font-semibold text-gray-600 dark:text-gray-400 py-1 sm:py-2 text-xs sm:text-sm">
+          <div key={idx} className="text-center font-bold text-gray-800 dark:text-gray-100 py-1 sm:py-2 text-xs sm:text-sm">
             {day}
           </div>
         ))}
@@ -114,8 +114,8 @@ export default function Calendar({ onDateSelect, selectedDate }: CalendarProps) 
               <div
                 className={`
                   font-bold
-                  ${isCurrentMonth ? 'text-gray-800 dark:text-white' : 'text-gray-400 dark:text-gray-500'}
-                  ${isToday ? 'text-blue-600 dark:text-blue-400' : ''}
+                  ${isCurrentMonth ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'}
+                  ${isToday ? 'text-blue-700 dark:text-blue-300 font-black' : ''}
                   text-xs sm:text-sm
                 `}
               >
@@ -148,18 +148,18 @@ export default function Calendar({ onDateSelect, selectedDate }: CalendarProps) 
       </div>
 
       {/* Leyenda */}
-      <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200 dark:border-slate-600 flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm">
+      <div className="mt-3 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-200 dark:border-slate-600 flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm font-medium">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded"></div>
-          <span className="text-gray-600 dark:text-gray-400 hidden sm:inline">Hoy</span>
+          <span className="text-gray-800 dark:text-gray-200 hidden sm:inline">Hoy</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded"></div>
-          <span className="text-gray-600 dark:text-gray-400 hidden sm:inline">Tarea</span>
+          <span className="text-gray-800 dark:text-gray-200 hidden sm:inline">Tarea</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded"></div>
-          <span className="text-gray-600 dark:text-gray-400 hidden sm:inline">Prioridad</span>
+          <span className="text-gray-800 dark:text-gray-200 hidden sm:inline">Prioridad</span>
         </div>
       </div>
     </div>

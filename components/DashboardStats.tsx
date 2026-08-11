@@ -39,12 +39,12 @@ export default function DashboardStats({ notes }: DashboardStatsProps) {
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 uppercase font-semibold">
+          <p className="text-xs text-gray-700 dark:text-gray-300 uppercase font-bold">
             {label}
           </p>
-          <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{value}</p>
+          <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{value}</p>
         </div>
-        <Icon size={32} className={`opacity-20 ${color.replace('border', 'text')}`} />
+        <Icon size={32} className={`opacity-30 ${color.replace('border', 'text')}`} />
       </div>
     </div>
   );
@@ -82,11 +82,11 @@ export default function DashboardStats({ notes }: DashboardStatsProps) {
       {/* Completion Progress */}
       {stats.totalTasks > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-3">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
             Progreso de Tareas
           </h3>
           <div className="space-y-2">
-            <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+            <div className="flex justify-between text-xs text-gray-800 dark:text-gray-200 font-semibold">
               <span>
                 {stats.completedTasks} de {stats.totalTasks}
               </span>
@@ -105,7 +105,7 @@ export default function DashboardStats({ notes }: DashboardStatsProps) {
       {/* Upcoming Tasks */}
       {upcomingTasks.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-4">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
             Próximas Tareas
           </h3>
           <div className="space-y-3">
@@ -121,10 +121,10 @@ export default function DashboardStats({ notes }: DashboardStatsProps) {
                   }`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 dark:text-white line-clamp-1">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">
                     {task.title}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-800 dark:text-gray-300 font-semibold mt-0.5">
                     {new Date(task.dueDate!).toLocaleDateString('es-ES', {
                       month: 'short',
                       day: 'numeric',
