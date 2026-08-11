@@ -9,6 +9,10 @@ export interface Note {
   dueDate?: string;
   priority?: 'low' | 'medium' | 'high';
   color?: string;
+  isFavorite?: boolean;
+  tags?: string[];
+  isDeleted?: boolean;
+  deletedAt?: string;
 }
 
 export interface User {

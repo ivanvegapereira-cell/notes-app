@@ -14,10 +14,17 @@ interface NotesStore {
   addNote: (note: Note) => void;
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
+  restoreNote: (id: string) => void;
+  permanentlyDeleteNote: (id: string) => void;
+  toggleFavorite: (id: string) => void;
+  addTag: (id: string, tag: string) => void;
+  removeTag: (id: string, tag: string) => void;
   setNotes: (notes: Note[]) => void;
   getNotesByCategory: (category: Note['category']) => Note[];
   getTodayTasks: () => Note[];
   filterBySearch: (query: string) => Note[];
+  getDeletedNotes: () => Note[];
+  getFavoriteNotes: () => Note[];
   syncWithCloud: () => Promise<void>;
   setIsSyncing: (syncing: boolean) => void;
 }
@@ -75,18 +82,98 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     const noteToDelete = get().notes.find((n) => n.id === id);
 
     set((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id
+          ? {
+              ...note,
+              isDeleted: true,
+              deletedAt: new Date().toISOString(),
+            }
+          : note
+      ),
+    }));
+
+    const state = get();
+    saveToLocalStorage(state.notes);
+    syncWithCloud(state.notes);
+
+    if (isSupabaseEnabled && noteToDelete) {
+      await NotesSync.syncToSupabase({ ...noteToDelete, isDeleted: true }, 'update');
+    }
+  },
+
+  restoreNote: async (id) => {
+    const noteToRestore = get().notes.find((n) => n.id === id);
+
+    set((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id
+          ? {
+              ...note,
+              isDeleted: false,
+              deletedAt: undefined,
+            }
+          : note
+      ),
+    }));
+
+    const state = get();
+    saveToLocalStorage(state.notes);
+    syncWithCloud(state.notes);
+
+    if (isSupabaseEnabled && noteToRestore) {
+      await NotesSync.syncToSupabase({ ...noteToRestore, isDeleted: false }, 'update');
+    }
+  },
+
+  permanentlyDeleteNote: (id) => {
+    set((state) => ({
       notes: state.notes.filter((note) => note.id !== id),
     }));
 
     const state = get();
     saveToLocalStorage(state.notes);
-
-    // Sincronizar con nube en segundo plano
     syncWithCloud(state.notes);
+  },
 
-    if (isSupabaseEnabled && noteToDelete) {
-      await NotesSync.syncToSupabase(noteToDelete, 'delete');
-    }
+  toggleFavorite: (id) => {
+    set((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id ? { ...note, isFavorite: !note.isFavorite } : note
+      ),
+    }));
+
+    const state = get();
+    saveToLocalStorage(state.notes);
+    syncWithCloud(state.notes);
+  },
+
+  addTag: (id, tag) => {
+    set((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id
+          ? { ...note, tags: [...(note.tags || []), tag] }
+          : note
+      ),
+    }));
+
+    const state = get();
+    saveToLocalStorage(state.notes);
+    syncWithCloud(state.notes);
+  },
+
+  removeTag: (id, tag) => {
+    set((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id
+          ? { ...note, tags: (note.tags || []).filter((t) => t !== tag) }
+          : note
+      ),
+    }));
+
+    const state = get();
+    saveToLocalStorage(state.notes);
+    syncWithCloud(state.notes);
   },
 
   setNotes: (notes) => {
@@ -95,12 +182,13 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
   },
 
   getNotesByCategory: (category) => {
-    return get().notes.filter((note) => note.category === category);
+    return get().notes.filter((note) => note.category === category && !note.isDeleted);
   },
 
   getTodayTasks: () => {
     const today = new Date().toDateString();
     return get().notes.filter((note) => {
+      if (note.isDeleted) return false;
       if (note.category !== 'task' && note.category !== 'agenda') return false;
       if (!note.dueDate) return false;
       return new Date(note.dueDate).toDateString() === today;
@@ -111,9 +199,18 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     const lowerQuery = query.toLowerCase();
     return get().notes.filter(
       (note) =>
-        note.title.toLowerCase().includes(lowerQuery) ||
-        note.content.toLowerCase().includes(lowerQuery)
+        !note.isDeleted &&
+        (note.title.toLowerCase().includes(lowerQuery) ||
+          note.content.toLowerCase().includes(lowerQuery))
     );
+  },
+
+  getDeletedNotes: () => {
+    return get().notes.filter((note) => note.isDeleted);
+  },
+
+  getFavoriteNotes: () => {
+    return get().notes.filter((note) => note.isFavorite && !note.isDeleted);
   },
 
   syncWithCloud: async () => {

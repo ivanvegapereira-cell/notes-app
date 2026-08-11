@@ -14,14 +14,16 @@ import {
   Check,
   Moon,
   Sun,
+  Trash2,
+  Star,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNotesStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme-context';
 
 interface SidebarProps {
-  activeCategory: Note['category'] | 'all' | 'dashboard';
-  onCategoryChange: (category: Note['category'] | 'all' | 'dashboard') => void;
+  activeCategory: Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites';
+  onCategoryChange: (category: Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites') => void;
   onNewNote: () => void;
 }
 
@@ -37,10 +39,12 @@ export default function Sidebar({
 
   const categories = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'favorites', label: 'Favoritos', icon: Star },
     { id: 'all', label: 'Todas', icon: FileText },
     { id: 'note', label: 'Notas', icon: FileText },
     { id: 'task', label: 'Tareas', icon: CheckSquare },
     { id: 'agenda', label: 'Agenda', icon: Calendar },
+    { id: 'trash', label: 'Papelera', icon: Trash2 },
   ];
 
   const handleCategoryChange = (category: any) => {

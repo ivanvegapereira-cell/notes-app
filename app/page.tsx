@@ -11,10 +11,11 @@ import SearchBar from '@/components/SearchBar';
 import Calendar from '@/components/Calendar';
 import DashboardStats from '@/components/DashboardStats';
 import FilterBar, { FilterState, SortOption } from '@/components/FilterBar';
+import TrashBin from '@/components/TrashBin';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<Note['category'] | 'all' | 'dashboard'>('dashboard');
+  const [activeCategory, setActiveCategory] = useState<Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites'>('dashboard');
   const [selectedNote, setSelectedNote] = useState<Note | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -63,10 +64,16 @@ export default function Home() {
   const getDisplayNotes = () => {
     let filtered = notes;
 
-    if (activeCategory !== 'dashboard' && activeCategory !== 'all') {
+    if (activeCategory === 'dashboard') {
+      return [];
+    } else if (activeCategory === 'trash') {
+      return [];
+    } else if (activeCategory === 'favorites') {
+      filtered = notes.filter((n) => n.isFavorite && !n.isDeleted);
+    } else if (activeCategory !== 'all') {
       filtered = getNotesByCategory(activeCategory as Note['category']);
     } else if (activeCategory === 'all') {
-      filtered = notes;
+      filtered = notes.filter((n) => !n.isDeleted);
     }
 
     if (searchQuery) {
@@ -219,13 +226,30 @@ export default function Home() {
           </div>
         )}
 
+        {/* Papelera */}
+        {activeCategory === 'trash' && (
+          <div className="p-4 sm:p-6 md:p-8 pb-20 md:pb-0">
+            <div className="mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 sm:mb-2">
+                Papelera
+              </h1>
+              <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400">
+                Gestiona tus notas eliminadas
+              </p>
+            </div>
+            <TrashBin />
+          </div>
+        )}
+
         {/* Vistas por categoría */}
-        {activeCategory !== 'dashboard' && (
+        {activeCategory !== 'dashboard' && activeCategory !== 'trash' && (
           <div className="p-4 sm:p-6 md:p-8 pb-20 md:pb-0">
             <div className="mb-4 sm:mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 sm:mb-2">
                 {activeCategory === 'all'
                   ? 'Todas mis notas'
+                  : activeCategory === 'favorites'
+                  ? 'Favoritos'
                   : activeCategory === 'note'
                   ? 'Notas'
                   : activeCategory === 'task'

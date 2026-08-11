@@ -2,9 +2,10 @@
 
 import { Note } from '@/lib/types';
 import { useNotesStore } from '@/lib/store';
-import { Trash2, Edit2, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { Trash2, Edit2, CheckCircle2, Circle, AlertCircle, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useState } from 'react';
 
 interface NoteCardProps {
   note: Note;
@@ -12,7 +13,9 @@ interface NoteCardProps {
 }
 
 export default function NoteCard({ note, onEdit }: NoteCardProps) {
-  const { deleteNote, updateNote } = useNotesStore();
+  const { deleteNote, updateNote, toggleFavorite } = useNotesStore();
+  const [showTagInput, setShowTagInput] = useState(false);
+  const [newTag, setNewTag] = useState('');
 
   const categoryColors = {
     note: 'from-blue-500 to-blue-600',
@@ -45,9 +48,19 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 group">
+    <div
+      className={`rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 group ${
+        note.isFavorite
+          ? 'bg-yellow-50 dark:bg-yellow-900/20'
+          : 'bg-white dark:bg-slate-800'
+      }`}
+    >
       {/* Header con gradiente */}
-      <div className={`h-1 bg-gradient-to-r ${categoryColors[note.category]}`}></div>
+      <div
+        className={`h-1 bg-gradient-to-r ${
+          note.isFavorite ? 'from-yellow-400 to-yellow-500' : categoryColors[note.category]
+        }`}
+      ></div>
 
       <div className="p-5">
         {/* Título y acciones */}
@@ -91,21 +104,35 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
 
           {/* Botones de acción */}
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={() => toggleFavorite(note.id)}
+              className={`p-2 rounded-lg transition ${
+                note.isFavorite
+                  ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                  : 'hover:bg-yellow-100 dark:hover:bg-yellow-900/30'
+              }`}
+              title={note.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              <Star
+                size={18}
+                className={note.isFavorite ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'}
+              />
+            </button>
             {onEdit && (
               <button
                 onClick={() => onEdit(note)}
-                className="p-2 hover:bg-blue-100 rounded-lg transition"
+                className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition"
                 title="Editar"
               >
-                <Edit2 size={18} className="text-blue-600" />
+                <Edit2 size={18} className="text-blue-600 dark:text-blue-400" />
               </button>
             )}
             <button
               onClick={() => deleteNote(note.id)}
-              className="p-2 hover:bg-red-100 rounded-lg transition"
+              className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition"
               title="Eliminar"
             >
-              <Trash2 size={18} className="text-red-600" />
+              <Trash2 size={18} className="text-red-600 dark:text-red-400" />
             </button>
           </div>
         </div>
@@ -115,6 +142,51 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
           {note.content.substring(0, 150)}
           {note.content.length > 150 ? '...' : ''}
         </p>
+
+        {/* Tags */}
+        {(note.tags && note.tags.length > 0) || showTagInput ? (
+          <div className="mb-3 space-y-2">
+            {note.tags && note.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {note.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 flex items-center gap-1"
+                  >
+                    {tag}
+                    <button
+                      onClick={() => {
+                        const { removeTag } = useNotesStore.getState();
+                        removeTag(note.id, tag);
+                      }}
+                      className="hover:text-blue-900 dark:hover:text-blue-200"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {showTagInput && (
+              <input
+                type="text"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newTag.trim()) {
+                    const { addTag } = useNotesStore.getState();
+                    addTag(note.id, newTag.trim());
+                    setNewTag('');
+                    setShowTagInput(false);
+                  }
+                }}
+                placeholder="Agregar tag..."
+                className="w-full px-2 py-1 text-xs border border-blue-300 dark:border-blue-600 rounded bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                autoFocus
+              />
+            )}
+          </div>
+        ) : null}
 
         {/* Metadata */}
         <div className="space-y-2 text-xs text-gray-600 dark:text-gray-400 pt-3 border-t border-slate-100 dark:border-slate-700">
@@ -129,11 +201,20 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
             </div>
           )}
 
-          <div className="text-gray-500">
+          <div className="text-gray-500 dark:text-gray-400">
             {format(new Date(note.updatedAt), 'PPp', {
               locale: es,
             })}
           </div>
+
+          {!showTagInput && (
+            <button
+              onClick={() => setShowTagInput(true)}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-medium"
+            >
+              + Tag
+            </button>
+          )}
         </div>
       </div>
     </div>
