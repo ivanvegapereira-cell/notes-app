@@ -8,7 +8,10 @@ import {
   Plus,
   Settings,
   Home,
+  Menu,
+  X,
 } from 'lucide-react';
+import { useState } from 'react';
 
 interface SidebarProps {
   activeCategory: Note['category'] | 'all' | 'dashboard';
@@ -21,6 +24,8 @@ export default function Sidebar({
   onCategoryChange,
   onNewNote,
 }: SidebarProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   const categories = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'all', label: 'Todas', icon: FileText },
@@ -29,56 +34,90 @@ export default function Sidebar({
     { id: 'agenda', label: 'Agenda', icon: Calendar },
   ];
 
-  return (
-    <aside className="w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white p-6 flex flex-col h-screen fixed left-0 top-0 z-40 shadow-2xl">
-      {/* Logo */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg flex items-center justify-center font-bold text-lg">
-            ✓
-          </div>
-          <h1 className="text-2xl font-bold">NotaFlow</h1>
-        </div>
-        <p className="text-slate-400 text-sm ml-13">Tu gestor de tareas</p>
-      </div>
+  const handleCategoryChange = (category: any) => {
+    onCategoryChange(category);
+    setIsOpen(false);
+  };
 
-      {/* Botón Nueva Nota */}
+  return (
+    <>
+      {/* Botón hamburguesa en móvil */}
       <button
-        onClick={onNewNote}
-        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-cyan-600 transition shadow-lg mb-8 flex items-center justify-center gap-2"
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed top-4 left-4 z-50 md:hidden bg-slate-800 text-white p-2 rounded-lg shadow-lg"
       >
-        <Plus size={20} />
-        Nueva nota
+        {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {/* Navegación */}
-      <nav className="space-y-1 flex-1">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Menú</p>
-        {categories.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            onClick={() => onCategoryChange(id as any)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition group
-              ${
-                activeCategory === id
-                  ? 'bg-blue-600 text-white shadow-lg'
-                  : 'text-slate-300 hover:bg-slate-700'
-              }
-            `}
-          >
-            <Icon size={20} className={activeCategory === id ? 'text-white' : 'text-slate-400 group-hover:text-slate-300'} />
-            <span className="font-medium">{label}</span>
-          </button>
-        ))}
-      </nav>
+      {/* Overlay en móvil */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
-      {/* Footer */}
-      <div className="border-t border-slate-700 pt-6">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition group">
-          <Settings size={20} className="text-slate-400 group-hover:text-slate-300" />
-          <span className="font-medium">Ajustes</span>
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-screen w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900
+          text-white p-6 flex flex-col shadow-2xl transition-transform duration-300 z-40
+          ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+          md:relative md:translate-x-0 md:w-72
+        `}
+      >
+        {/* Logo */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-lg flex items-center justify-center font-bold text-lg">
+              ✓
+            </div>
+            <h1 className="text-2xl font-bold">NotaFlow</h1>
+          </div>
+          <p className="text-slate-400 text-sm ml-13">Tu gestor</p>
+        </div>
+
+        {/* Botón Nueva Nota */}
+        <button
+          onClick={() => {
+            onNewNote();
+            setIsOpen(false);
+          }}
+          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-cyan-600 transition shadow-lg mb-8 flex items-center justify-center gap-2"
+        >
+          <Plus size={20} />
+          Nueva nota
         </button>
-      </div>
-    </aside>
+
+        {/* Navegación */}
+        <nav className="space-y-1 flex-1">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Menú</p>
+          {categories.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => handleCategoryChange(id as any)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition group
+                ${
+                  activeCategory === id
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'text-slate-300 hover:bg-slate-700'
+                }
+              `}
+            >
+              <Icon size={20} className={activeCategory === id ? 'text-white' : 'text-slate-400 group-hover:text-slate-300'} />
+              <span className="font-medium">{label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-slate-700 pt-6">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition group">
+            <Settings size={20} className="text-slate-400 group-hover:text-slate-300" />
+            <span className="font-medium">Ajustes</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
