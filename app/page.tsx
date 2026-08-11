@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Note } from '@/lib/types';
 import { useNotesStore } from '@/lib/store';
+import { NotesSync } from '@/lib/sync';
 import Sidebar from '@/components/Sidebar';
 import NoteCard from '@/components/NoteCard';
 import NoteModal from '@/components/NoteModal';
@@ -16,16 +17,34 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const { notes, addNote, updateNote, getNotesByCategory } = useNotesStore();
+  const { notes, addNote, updateNote, getNotesByCategory, syncNotes } = useNotesStore();
 
   useEffect(() => {
-    setMounted(true);
-    const savedNotes = localStorage.getItem('notes');
-    if (savedNotes) {
-      useNotesStore.setState({ notes: JSON.parse(savedNotes) });
-    }
-  }, []);
+    const initializeApp = async () => {
+      setMounted(true);
+      setIsSyncing(true);
+      await NotesSync.initializeSync(useNotesStore);
+      setIsSyncing(false);
+    };
+
+    initializeApp();
+
+    // Sincronizar cuando la ventana gana foco
+    const handleFocus = async () => {
+      setIsSyncing(true);
+      await syncNotes();
+      setIsSyncing(false);
+    };
+
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      NotesSync.stopAutoSync();
+    };
+  }, [syncNotes]);
 
   const getDisplayNotes = () => {
     let filtered = notes;

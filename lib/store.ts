@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { Note } from './types';
+import { NotesSync } from './sync';
+import { isSupabaseEnabled, createNote, updateNoteInDB, deleteNoteFromDB } from './supabase';
 
 interface NotesStore {
   notes: Note[];
@@ -10,47 +12,71 @@ interface NotesStore {
   getNotesByCategory: (category: Note['category']) => Note[];
   getTodayTasks: () => Note[];
   filterBySearch: (query: string) => Note[];
+  syncNotes: () => Promise<void>;
 }
 
 export const useNotesStore = create<NotesStore>((set, get) => ({
   notes: [],
 
-  addNote: (note) => {
+  addNote: async (note) => {
     set((state) => ({
       notes: [...state.notes, note],
     }));
-    // Sync to localStorage
+
     const state = get();
-    localStorage.setItem('notes', JSON.stringify(state.notes));
+    NotesSync.saveLocalNotes(state.notes);
+
+    // Sincronizar con Supabase si está disponible
+    if (isSupabaseEnabled) {
+      await NotesSync.syncToSupabase(note, 'insert');
+    }
   },
 
-  updateNote: (id, updates) => {
+  updateNote: async (id, updates) => {
+    let updatedNote: Note | undefined;
+
     set((state) => ({
-      notes: state.notes.map((note) =>
-        note.id === id
-          ? {
-              ...note,
-              ...updates,
-              updatedAt: new Date().toISOString(),
-            }
-          : note
-      ),
+      notes: state.notes.map((note) => {
+        if (note.id === id) {
+          updatedNote = {
+            ...note,
+            ...updates,
+            updatedAt: new Date().toISOString(),
+          };
+          return updatedNote;
+        }
+        return note;
+      }),
     }));
+
     const state = get();
-    localStorage.setItem('notes', JSON.stringify(state.notes));
+    NotesSync.saveLocalNotes(state.notes);
+
+    // Sincronizar con Supabase si está disponible
+    if (isSupabaseEnabled && updatedNote) {
+      await NotesSync.syncToSupabase(updatedNote, 'update');
+    }
   },
 
-  deleteNote: (id) => {
+  deleteNote: async (id) => {
+    const noteToDelete = get().notes.find((n) => n.id === id);
+
     set((state) => ({
       notes: state.notes.filter((note) => note.id !== id),
     }));
+
     const state = get();
-    localStorage.setItem('notes', JSON.stringify(state.notes));
+    NotesSync.saveLocalNotes(state.notes);
+
+    // Sincronizar con Supabase si está disponible
+    if (isSupabaseEnabled && noteToDelete) {
+      await NotesSync.syncToSupabase(noteToDelete, 'delete');
+    }
   },
 
   setNotes: (notes) => {
     set({ notes });
-    localStorage.setItem('notes', JSON.stringify(notes));
+    NotesSync.saveLocalNotes(notes);
   },
 
   getNotesByCategory: (category) => {
@@ -73,5 +99,12 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
         note.title.toLowerCase().includes(lowerQuery) ||
         note.content.toLowerCase().includes(lowerQuery)
     );
+  },
+
+  syncNotes: async () => {
+    if (isSupabaseEnabled) {
+      await NotesSync.syncFromSupabase(useNotesStore);
+      await NotesSync.processSyncQueue(useNotesStore);
+    }
   },
 }));
