@@ -10,8 +10,11 @@ import {
   Home,
   Menu,
   X,
+  Cloud,
+  Check,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNotesStore } from '@/lib/store';
 
 interface SidebarProps {
   activeCategory: Note['category'] | 'all' | 'dashboard';
@@ -25,6 +28,8 @@ export default function Sidebar({
   onNewNote,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const isSyncing = useNotesStore((state) => state.isSyncing);
+  const lastSync = useNotesStore((state) => state.lastSync);
 
   const categories = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -111,7 +116,24 @@ export default function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-slate-700 pt-6">
+        <div className="border-t border-slate-700 pt-6 space-y-3">
+          {/* Sync Status */}
+          <div className="px-4 py-2 bg-slate-700 rounded-lg flex items-center gap-2">
+            {isSyncing ? (
+              <>
+                <Cloud size={16} className="text-blue-400 animate-pulse" />
+                <span className="text-xs text-slate-300">Sincronizando...</span>
+              </>
+            ) : (
+              <>
+                <Check size={16} className="text-green-400" />
+                <span className="text-xs text-slate-300">
+                  {lastSync ? `Sincronizado` : 'Sin conexión'}
+                </span>
+              </>
+            )}
+          </div>
+
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition group">
             <Settings size={20} className="text-slate-400 group-hover:text-slate-300" />
             <span className="font-medium">Ajustes</span>

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Note } from '@/lib/types';
-import { useNotesStore } from '@/lib/store';
-import { NotesSync } from '@/lib/sync';
+import { useNotesStore, loadFromLocalStorage } from '@/lib/store';
+import { CloudSync } from '@/lib/cloud-sync';
 import Sidebar from '@/components/Sidebar';
 import NoteCard from '@/components/NoteCard';
 import NoteModal from '@/components/NoteModal';
@@ -17,34 +17,44 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [isSyncing, setIsSyncing] = useState(false);
 
-  const { notes, addNote, updateNote, getNotesByCategory, syncNotes } = useNotesStore();
+  const { notes, addNote, updateNote, getNotesByCategory, syncWithCloud, setNotes } = useNotesStore();
+  const isSyncing = useNotesStore((state) => state.isSyncing);
 
   useEffect(() => {
     const initializeApp = async () => {
+      // Cargar desde localStorage primero
+      const localNotes = loadFromLocalStorage();
+      setNotes(localNotes);
+
+      // Inicializar cloud sync
+      await CloudSync.initCloud();
+
+      // Sincronizar con la nube
+      await syncWithCloud();
+
       setMounted(true);
-      setIsSyncing(true);
-      await NotesSync.initializeSync(useNotesStore);
-      setIsSyncing(false);
     };
 
     initializeApp();
 
     // Sincronizar cuando la ventana gana foco
     const handleFocus = async () => {
-      setIsSyncing(true);
-      await syncNotes();
-      setIsSyncing(false);
+      await syncWithCloud();
     };
+
+    // Sincronizar cada 60 segundos
+    const syncInterval = setInterval(() => {
+      syncWithCloud();
+    }, 60000);
 
     window.addEventListener('focus', handleFocus);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
-      NotesSync.stopAutoSync();
+      clearInterval(syncInterval);
     };
-  }, [syncNotes]);
+  }, [syncWithCloud, setNotes]);
 
   const getDisplayNotes = () => {
     let filtered = notes;
