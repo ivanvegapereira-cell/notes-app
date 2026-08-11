@@ -33,7 +33,7 @@ export class NotesSync {
   }
 
   static async syncFromSupabase(store: any) {
-    if (!isSupabaseEnabled) return;
+    if (!isSupabaseEnabled || !supabase) return;
 
     try {
       const { data, error } = await supabase
@@ -57,7 +57,7 @@ export class NotesSync {
   }
 
   static async syncToSupabase(note: Note, operation: 'insert' | 'update' | 'delete') {
-    if (!isSupabaseEnabled) return;
+    if (!isSupabaseEnabled || !supabase) return;
 
     try {
       if (operation === 'delete') {
@@ -74,7 +74,7 @@ export class NotesSync {
     }
   }
 
-  static private noteToDb(note: Note) {
+  private static noteToDb(note: Note) {
     return {
       id: note.id,
       title: note.title,
@@ -89,7 +89,7 @@ export class NotesSync {
     };
   }
 
-  static private mergeNotes(local: Note[], remote: Note[]): Note[] {
+  private static mergeNotes(local: Note[], remote: Note[]): Note[] {
     const merged = new Map<string, Note>();
 
     // Añadir notas locales
@@ -106,7 +106,7 @@ export class NotesSync {
     return Array.from(merged.values());
   }
 
-  static private queueSyncOperation(note: Note, operation: string) {
+  private static queueSyncOperation(note: Note, operation: string) {
     const queue = localStorage.getItem('sync_queue') || '[]';
     const operations = JSON.parse(queue);
     operations.push({ note, operation, timestamp: new Date().toISOString() });
