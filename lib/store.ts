@@ -25,6 +25,7 @@ interface NotesStore {
   filterBySearch: (query: string) => Note[];
   getDeletedNotes: () => Note[];
   getFavoriteNotes: () => Note[];
+  moveOverdueTasksToNextDay: () => void;
   syncWithCloud: () => Promise<void>;
   setIsSyncing: (syncing: boolean) => void;
 }
@@ -211,6 +212,45 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
 
   getFavoriteNotes: () => {
     return get().notes.filter((note) => note.isFavorite && !note.isDeleted);
+  },
+
+  moveOverdueTasksToNextDay: () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let hasChanges = false;
+    const updatedNotes = get().notes.map((note) => {
+      // Solo aplica a tareas incompletas con fecha de vencimiento
+      if (
+        note.category === 'task' &&
+        !note.completed &&
+        note.dueDate &&
+        !note.isDeleted
+      ) {
+        const noteDate = new Date(note.dueDate);
+        noteDate.setHours(0, 0, 0, 0);
+
+        // Si la fecha de vencimiento es antes de hoy, traspasar al siguiente día
+        if (noteDate < today) {
+          const nextDay = new Date(noteDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+          hasChanges = true;
+
+          return {
+            ...note,
+            dueDate: nextDay.toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+        }
+      }
+      return note;
+    });
+
+    if (hasChanges) {
+      set({ notes: updatedNotes });
+      saveToLocalStorage(updatedNotes);
+      syncWithCloud(updatedNotes);
+    }
   },
 
   syncWithCloud: async () => {

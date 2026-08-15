@@ -44,13 +44,21 @@ export default function NoteModal({
     if (!formData.title?.trim()) return;
 
     const now = new Date().toISOString();
+
+    // Convertir fecha correctamente a ISO string
+    let dueDateISO = formData.dueDate;
+    if (formData.dueDate && typeof formData.dueDate === 'string' && !formData.dueDate.includes('T')) {
+      // Si es un string en formato YYYY-MM-DD, convertir a ISO con hora 00:00:00
+      dueDateISO = new Date(formData.dueDate + 'T00:00:00').toISOString();
+    }
+
     const newNote: Note = {
       id: note?.id || crypto.randomUUID(),
       title: formData.title,
       content: formData.content || '',
       category: (formData.category as Note['category']) || 'note',
       priority: formData.priority as Note['priority'],
-      dueDate: formData.dueDate,
+      dueDate: dueDateISO,
       completed: formData.completed || false,
       createdAt: note?.createdAt || now,
       updatedAt: now,

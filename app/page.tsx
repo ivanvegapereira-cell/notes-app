@@ -24,7 +24,7 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterState>({ priority: 'all', status: 'all' });
   const [sort, setSort] = useState<SortOption>('newest');
 
-  const { notes, addNote, updateNote, getNotesByCategory, syncWithCloud, setNotes } = useNotesStore();
+  const { notes, addNote, updateNote, getNotesByCategory, syncWithCloud, setNotes, moveOverdueTasksToNextDay } = useNotesStore();
   const isSyncing = useNotesStore((state) => state.isSyncing);
 
   useEffect(() => {
@@ -32,6 +32,9 @@ export default function Home() {
       // Cargar desde localStorage primero
       const localNotes = loadFromLocalStorage();
       setNotes(localNotes);
+
+      // Traspasar tareas incompletas al día siguiente si están vencidas
+      moveOverdueTasksToNextDay();
 
       // Inicializar cloud sync
       await CloudSync.initCloud();
