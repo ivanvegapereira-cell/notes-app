@@ -13,6 +13,7 @@ import DashboardStats from '@/components/DashboardStats';
 import FilterBar, { FilterState, SortOption } from '@/components/FilterBar';
 import TrashBin from '@/components/TrashBin';
 import DayActivities from '@/components/DayActivities';
+import SendReminderButton from '@/components/SendReminderButton';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -314,6 +315,9 @@ export default function Home() {
           onEditNote={handleEditNote}
         />
       )}
+
+      {/* Send Reminder Button */}
+      <SendReminderButton />
     </div>
   );
 }
