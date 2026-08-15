@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
-
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
+import nodemailer from 'nodemailer';
 
 interface ReminderRequest {
   pendingTasks: Array<{
@@ -14,17 +10,61 @@ interface ReminderRequest {
   userEmail: string;
 }
 
+// Crear transportador de email usando variables de entorno
+const createTransporter = () => {
+  // Intentar usar SendGrid primero, luego Gmail, luego fallback
+  if (process.env.SENDGRID_API_KEY) {
+    return nodemailer.createTransport({
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      auth: {
+        user: 'apikey',
+        pass: process.env.SENDGRID_API_KEY,
+      },
+    });
+  }
+
+  if (process.env.GMAIL_USER && process.env.GMAIL_PASSWORD) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASSWORD,
+      },
+    });
+  }
+
+  // Fallback: usar SMTP genérico si está configurado
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+  }
+
+  return null;
+};
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as ReminderRequest;
     const { pendingTasks, userEmail } = body;
 
-    if (!resend || !process.env.RESEND_API_KEY) {
+    const transporter = createTransporter();
+
+    if (!transporter) {
       return NextResponse.json(
         {
-          error: 'RESEND_API_KEY no configurada. Por favor, agrega tu API key de Resend en las variables de entorno de Vercel. Visita https://resend.com para obtener una API key gratuita.',
+          error: 'No hay configuración de email. Por favor, configura UNA de estas opciones en Vercel Environment Variables:' +
+            '\n1. SENDGRID_API_KEY (recomendado)' +
+            '\n2. GMAIL_USER + GMAIL_PASSWORD' +
+            '\n3. SMTP_HOST + SMTP_USER + SMTP_PASSWORD + SMTP_PORT',
           success: false,
-          instruction: 'Para configurar: Ve a https://vercel.com/dashboard -> Settings -> Environment Variables -> Agrega RESEND_API_KEY',
+          instruction: 'Ve a https://vercel.com/dashboard -> Settings -> Environment Variables',
         },
         { status: 500 }
       );
@@ -170,17 +210,22 @@ export async function POST(request: NextRequest) {
     </html>
     `;
 
-    const response = await resend.emails.send({
-      from: 'NotaFlow <onboarding@resend.dev>',
+    // Enviar email usando nodemailer
+    const senderEmail = process.env.GMAIL_USER || process.env.SMTP_USER || 'noreply@notaflow.app';
+
+    const mailOptions = {
+      from: `NotaFlow <${senderEmail}>`,
       to: userEmail,
       subject: `📋 Recordatorio: ${pendingTasks.length} tarea${pendingTasks.length !== 1 ? 's' : ''} pendiente${pendingTasks.length !== 1 ? 's' : ''}`,
       html: emailHTML,
-    });
+    };
 
-    if (response.error) {
+    const info = await transporter.sendMail(mailOptions);
+
+    if (!info.messageId) {
       return NextResponse.json(
         {
-          error: `Error al enviar email: ${response.error.message}`,
+          error: 'Error al enviar email: sin confirmación de envío',
           success: false,
         },
         { status: 500 }
@@ -191,7 +236,7 @@ export async function POST(request: NextRequest) {
       {
         message: `Email enviado exitosamente a ${userEmail}`,
         success: true,
-        id: response.data?.id,
+        id: info.messageId,
       },
       { status: 200 }
     );
