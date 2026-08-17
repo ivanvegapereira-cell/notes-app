@@ -1,14 +1,16 @@
 import { create } from 'zustand';
-import { Note } from './types';
+import { Note, Folder } from './types';
 import { NotesSync } from './sync';
 import { CloudSync } from './cloud-sync';
 import { isSupabaseEnabled } from './supabase';
 
 const STORAGE_KEY = 'notes';
+const FOLDERS_KEY = 'folders';
 const SYNC_STATUS_KEY = 'notes_sync_status';
 
 interface NotesStore {
   notes: Note[];
+  folders: Folder[];
   isSyncing: boolean;
   lastSync: string | null;
   addNote: (note: Note) => void;
@@ -21,17 +23,23 @@ interface NotesStore {
   removeTag: (id: string, tag: string) => void;
   setNotes: (notes: Note[]) => void;
   getNotesByCategory: (category: Note['category']) => Note[];
+  getNotesByFolder: (folderId: string) => Note[];
   getTodayTasks: () => Note[];
   filterBySearch: (query: string) => Note[];
   getDeletedNotes: () => Note[];
   getFavoriteNotes: () => Note[];
   moveOverdueTasksToNextDay: () => void;
+  addFolder: (folder: Folder) => void;
+  updateFolder: (id: string, updates: Partial<Folder>) => void;
+  deleteFolder: (id: string, moveNotesTo?: string) => void;
+  setFolders: (folders: Folder[]) => void;
   syncWithCloud: () => Promise<void>;
   setIsSyncing: (syncing: boolean) => void;
 }
 
 export const useNotesStore = create<NotesStore>((set, get) => ({
   notes: [],
+  folders: [],
   isSyncing: false,
   lastSync: null,
 
@@ -186,6 +194,10 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     return get().notes.filter((note) => note.category === category && !note.isDeleted);
   },
 
+  getNotesByFolder: (folderId) => {
+    return get().notes.filter((note) => note.folderId === folderId && !note.isDeleted);
+  },
+
   getTodayTasks: () => {
     const today = new Date().toDateString();
     return get().notes.filter((note) => {
@@ -253,6 +265,61 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     }
   },
 
+  addFolder: (folder) => {
+    set((state) => ({
+      folders: [...state.folders, folder],
+    }));
+
+    const state = get();
+    saveToLocalStorage(state.notes, state.folders);
+  },
+
+  updateFolder: (id, updates) => {
+    set((state) => ({
+      folders: state.folders.map((folder) =>
+        folder.id === id
+          ? {
+              ...folder,
+              ...updates,
+              updatedAt: new Date().toISOString(),
+            }
+          : folder
+      ),
+    }));
+
+    const state = get();
+    saveToLocalStorage(state.notes, state.folders);
+  },
+
+  deleteFolder: (id, moveNotesTo) => {
+    const notesToMove = get().notes.filter((n) => n.folderId === id);
+
+    if (moveNotesTo) {
+      // Mover notas a otra carpeta
+      set((state) => ({
+        notes: state.notes.map((note) =>
+          note.folderId === id ? { ...note, folderId: moveNotesTo } : note
+        ),
+        folders: state.folders.filter((folder) => folder.id !== id),
+      }));
+    } else {
+      // Eliminar carpeta y notas
+      set((state) => ({
+        notes: state.notes.filter((note) => note.folderId !== id),
+        folders: state.folders.filter((folder) => folder.id !== id),
+      }));
+    }
+
+    const state = get();
+    saveToLocalStorage(state.notes, state.folders);
+  },
+
+  setFolders: (folders) => {
+    set({ folders });
+    const state = get();
+    saveToLocalStorage(state.notes, folders);
+  },
+
   syncWithCloud: async () => {
     const state = get();
     set({ isSyncing: true });
@@ -284,14 +351,23 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
 }));
 
 // Funciones auxiliares
-function saveToLocalStorage(notes: Note[]) {
+function saveToLocalStorage(notes: Note[], folders?: Folder[]) {
   if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+  if (folders) {
+    localStorage.setItem(FOLDERS_KEY, JSON.stringify(folders));
+  }
 }
 
 export function loadFromLocalStorage(): Note[] {
   if (typeof window === 'undefined') return [];
   const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? JSON.parse(saved) : [];
+}
+
+export function loadFoldersFromLocalStorage(): Folder[] {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem(FOLDERS_KEY);
   return saved ? JSON.parse(saved) : [];
 }
 

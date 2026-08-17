@@ -20,10 +20,12 @@ import {
 import { useState } from 'react';
 import { useNotesStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme-context';
+import FolderSection from './FolderSection';
+import FolderManager from './FolderManager';
 
 interface SidebarProps {
-  activeCategory: Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites';
-  onCategoryChange: (category: Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites') => void;
+  activeCategory: Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites' | string;
+  onCategoryChange: (category: Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites' | string) => void;
   onNewNote: () => void;
 }
 
@@ -33,6 +35,7 @@ export default function Sidebar({
   onNewNote,
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFolderManagerOpen, setIsFolderManagerOpen] = useState(false);
   const isSyncing = useNotesStore((state) => state.isSyncing);
   const lastSync = useNotesStore((state) => state.lastSync);
   const { theme, toggleTheme } = useTheme();
@@ -123,6 +126,13 @@ export default function Sidebar({
           ))}
         </nav>
 
+        {/* Carpetas */}
+        <FolderSection
+          activeCategory={activeCategory}
+          onCategoryChange={handleCategoryChange}
+          onOpenFolderManager={() => setIsFolderManagerOpen(true)}
+        />
+
         {/* Footer */}
         <div className="border-t border-slate-700 pt-6 space-y-3">
           {/* Sync Status */}
@@ -167,6 +177,12 @@ export default function Sidebar({
           </button>
         </div>
       </aside>
+
+      {/* FolderManager Modal */}
+      <FolderManager
+        isOpen={isFolderManagerOpen}
+        onClose={() => setIsFolderManagerOpen(false)}
+      />
     </>
   );
 }

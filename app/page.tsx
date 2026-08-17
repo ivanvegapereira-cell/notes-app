@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Note } from '@/lib/types';
-import { useNotesStore, loadFromLocalStorage } from '@/lib/store';
+import { useNotesStore, loadFromLocalStorage, loadFoldersFromLocalStorage } from '@/lib/store';
 import { CloudSync } from '@/lib/cloud-sync';
 import Sidebar from '@/components/Sidebar';
 import NoteCard from '@/components/NoteCard';
@@ -17,7 +17,7 @@ import SendReminderButton from '@/components/SendReminderButton';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites'>('dashboard');
+  const [activeCategory, setActiveCategory] = useState<Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites' | string>('dashboard');
   const [selectedNote, setSelectedNote] = useState<Note | undefined>();
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -25,7 +25,7 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterState>({ priority: 'all', status: 'all' });
   const [sort, setSort] = useState<SortOption>('newest');
 
-  const { notes, addNote, updateNote, getNotesByCategory, syncWithCloud, setNotes, moveOverdueTasksToNextDay } = useNotesStore();
+  const { notes, addNote, updateNote, getNotesByCategory, getNotesByFolder, syncWithCloud, setNotes, setFolders, moveOverdueTasksToNextDay } = useNotesStore();
   const isSyncing = useNotesStore((state) => state.isSyncing);
 
   useEffect(() => {
@@ -33,6 +33,10 @@ export default function Home() {
       // Cargar desde localStorage primero
       const localNotes = loadFromLocalStorage();
       setNotes(localNotes);
+
+      // Cargar carpetas
+      const localFolders = loadFoldersFromLocalStorage();
+      setFolders(localFolders);
 
       // Traspasar tareas incompletas al día siguiente si están vencidas
       moveOverdueTasksToNextDay();
@@ -75,6 +79,9 @@ export default function Home() {
       return [];
     } else if (activeCategory === 'favorites') {
       filtered = notes.filter((n) => n.isFavorite && !n.isDeleted);
+    } else if (activeCategory.startsWith('folder:')) {
+      const folderId = activeCategory.substring(7);
+      filtered = getNotesByFolder(folderId);
     } else if (activeCategory !== 'all') {
       filtered = getNotesByCategory(activeCategory as Note['category']);
     } else if (activeCategory === 'all') {
@@ -259,7 +266,11 @@ export default function Home() {
                   ? 'Notas'
                   : activeCategory === 'task'
                   ? 'Tareas'
-                  : 'Agenda'}
+                  : activeCategory === 'agenda'
+                  ? 'Agenda'
+                  : activeCategory.startsWith('folder:')
+                  ? `Carpeta`
+                  : 'Notas'}
               </h1>
               <p className="text-xs sm:text-base text-gray-600 dark:text-gray-400">
                 {displayNotes.length} elemento{displayNotes.length !== 1 ? 's' : ''}
