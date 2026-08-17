@@ -13,10 +13,13 @@ import {
   endOfWeek,
   addMonths,
   subMonths,
+  addWeeks,
+  subWeeks,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Grid3x3, Calendar as CalendarIcon } from 'lucide-react';
+import WeeklyCalendarView from './WeeklyCalendarView';
 
 interface CalendarProps {
   onDateSelect?: (date: Date) => void;
@@ -25,6 +28,7 @@ interface CalendarProps {
 
 export default function Calendar({ onDateSelect, selectedDate }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState<'monthly' | 'weekly'>('monthly');
   const notes = useNotesStore((state) => state.notes);
 
   const monthStart = startOfMonth(currentDate);
@@ -43,6 +47,20 @@ export default function Calendar({ onDateSelect, selectedDate }: CalendarProps) 
 
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  const prevWeek = () => setCurrentDate(subWeeks(currentDate, 1));
+  const nextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
+
+  if (viewMode === 'weekly') {
+    return (
+      <WeeklyCalendarView
+        currentDate={currentDate}
+        onDateSelect={onDateSelect}
+        selectedDate={selectedDate}
+        onPrevWeek={prevWeek}
+        onNextWeek={nextWeek}
+      />
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-3 sm:p-6 w-full">
@@ -76,6 +94,32 @@ export default function Calendar({ onDateSelect, selectedDate }: CalendarProps) 
           >
             <ChevronRight size={20} className="sm:w-6 sm:h-6 text-gray-600 dark:text-gray-400" />
           </button>
+
+          {/* View toggle buttons */}
+          <div className="ml-2 sm:ml-4 flex gap-1 border-l border-gray-200 dark:border-slate-600 pl-2 sm:pl-4">
+            <button
+              onClick={() => setViewMode('monthly')}
+              className={`p-1 sm:p-2 rounded-lg transition ${
+                viewMode === 'monthly'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                  : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-400'
+              }`}
+              title="Vista mensual"
+            >
+              <Grid3x3 size={20} />
+            </button>
+            <button
+              onClick={() => setViewMode('weekly')}
+              className={`p-1 sm:p-2 rounded-lg transition ${
+                viewMode === 'weekly'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                  : 'hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-600 dark:text-gray-400'
+              }`}
+              title="Vista semanal"
+            >
+              <CalendarIcon size={20} />
+            </button>
+          </div>
         </div>
       </div>
 
