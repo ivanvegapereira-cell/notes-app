@@ -16,12 +16,14 @@ import {
   Sun,
   Trash2,
   Star,
+  Download,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNotesStore } from '@/lib/store';
 import { useTheme } from '@/lib/theme-context';
 import FolderSection from './FolderSection';
 import FolderManager from './FolderManager';
+import ImportModal from './ImportModal';
 
 interface SidebarProps {
   activeCategory: Note['category'] | 'all' | 'dashboard' | 'trash' | 'favorites' | string;
@@ -36,8 +38,10 @@ export default function Sidebar({
 }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isFolderManagerOpen, setIsFolderManagerOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const isSyncing = useNotesStore((state) => state.isSyncing);
   const lastSync = useNotesStore((state) => state.lastSync);
+  const addNote = useNotesStore((state) => state.addNote);
   const { theme, toggleTheme } = useTheme();
 
   const categories = [
@@ -171,6 +175,14 @@ export default function Sidebar({
             )}
           </button>
 
+          <button
+            onClick={() => setIsImportModalOpen(true)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition group"
+          >
+            <Download size={20} className="text-slate-400 group-hover:text-slate-300" />
+            <span className="font-medium">Importar</span>
+          </button>
+
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 transition group">
             <Settings size={20} className="text-slate-400 group-hover:text-slate-300" />
             <span className="font-medium">Ajustes</span>
@@ -182,6 +194,15 @@ export default function Sidebar({
       <FolderManager
         isOpen={isFolderManagerOpen}
         onClose={() => setIsFolderManagerOpen(false)}
+      />
+
+      {/* ImportModal */}
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={(notes) => {
+          notes.forEach((note) => addNote(note));
+        }}
       />
     </>
   );
