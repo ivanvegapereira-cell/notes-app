@@ -103,9 +103,10 @@ export default function Sidebar({
             onNewNote();
             setIsOpen(false);
           }}
-          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-cyan-600 transition shadow-lg mb-8 flex items-center justify-center gap-2"
+          aria-label="Crear una nueva nota"
+          className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-cyan-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white transition-colors shadow-lg mb-8 flex items-center justify-center gap-2"
         >
-          <Plus size={20} />
+          <Plus size={20} aria-hidden="true" />
           Nueva nota
         </button>
 
@@ -116,7 +117,8 @@ export default function Sidebar({
             <button
               key={id}
               onClick={() => handleCategoryChange(id as any)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition group
+              aria-current={activeCategory === id ? 'page' : undefined}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-blue-500 group
                 ${
                   activeCategory === id
                     ? 'bg-blue-600 text-white shadow-lg'

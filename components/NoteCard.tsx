@@ -48,8 +48,8 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
   };
 
   return (
-    <div
-      className={`rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 group ${
+    <article
+      className={`rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 group ${
         note.isFavorite
           ? 'bg-yellow-50 dark:bg-yellow-900/20'
           : 'bg-white dark:bg-slate-800'
@@ -103,36 +103,37 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
           </div>
 
           {/* Botones de acción */}
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
             <button
               onClick={() => toggleFavorite(note.id)}
-              className={`p-2 rounded-lg transition ${
+              aria-label={note.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              className={`p-2 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-500 ${
                 note.isFavorite
                   ? 'bg-yellow-100 dark:bg-yellow-900/30'
                   : 'hover:bg-yellow-100 dark:hover:bg-yellow-900/30'
               }`}
-              title={note.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
             >
               <Star
                 size={18}
                 className={note.isFavorite ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'}
+                aria-hidden="true"
               />
             </button>
             {onEdit && (
               <button
                 onClick={() => onEdit(note)}
-                className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition"
-                title="Editar"
+                aria-label="Editar nota"
+                className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
               >
-                <Edit2 size={18} className="text-blue-600 dark:text-blue-400" />
+                <Edit2 size={18} className="text-blue-600 dark:text-blue-400" aria-hidden="true" />
               </button>
             )}
             <button
               onClick={() => deleteNote(note.id)}
-              className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition"
-              title="Eliminar"
+              aria-label="Eliminar nota"
+              className="p-2 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500"
             >
-              <Trash2 size={18} className="text-red-600 dark:text-red-400" />
+              <Trash2 size={18} className="text-red-600 dark:text-red-400" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -144,7 +145,7 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
             : 'text-gray-800 dark:text-gray-100'
         }`}>
           {note.content.substring(0, 150)}
-          {note.content.length > 150 ? '...' : ''}
+          {note.content.length > 150 ? '…' : ''}
         </p>
 
         {/* Tags */}
@@ -221,6 +222,6 @@ export default function NoteCard({ note, onEdit }: NoteCardProps) {
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }
